@@ -1,5 +1,6 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
 using Bulky.DataAcess.Data;
+using Bulky.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,5 +37,11 @@ namespace Bulky.DataAccess.Repository
 		{
 			_db.SaveChanges();
 		}
+
+		//public IEnumerable<Product> GetProductsByDate(DateTime date)
+		//{
+		//	return _db.Products.Where(p => p.Date.Date == date.Date);
+		//}
+
 	}
 }

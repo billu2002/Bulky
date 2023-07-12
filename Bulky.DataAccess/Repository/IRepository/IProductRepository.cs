@@ -10,5 +10,6 @@ namespace Bulky.DataAccess.Repository.IRepository
 	public interface IProductRepository : IRepository<Product>
 	{
 		void Update(Product obj);
+		IEnumerable<Product> GetByDate(DateTime date);
 	}
 }

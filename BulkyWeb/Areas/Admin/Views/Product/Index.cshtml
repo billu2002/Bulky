@@ -10,10 +10,10 @@
 	</div>
 	<div class="card-body p-4">
 		<div class="row  pb-3">
-			<div class="d- flex col-6">
+			<div class="d-flex col-5">
 				
 			</div>
-			<div class="col-4 text-end">
+			<div class="col-3 text-end">
 				<a asp-controller="Product" asp-action="UploadCSV" class="btn btn-primary">
 					<i class="bi bi-plus-circle"></i> Upload a CSV
 				</a>
@@ -23,6 +23,12 @@
 					<i class="bi bi-plus-circle"></i>Create New Product
 				</a>
 			</div>
+			<div class="col-2 text-left">
+				<a asp-controller="Product" asp-action="Export" class="btn btn-primary">
+					<i class="bi bi-plus-circle"></i> Export Data
+				</a>
+			</div>
+			
 		</div>
 		<table id="tblData" class="table table-bordered table-striped" style="width:100%">
 			<thead>
@@ -32,7 +38,8 @@
 					<th>Price</th>
 					<th>Author</th>
 					<th>Category</th>
-					<th></th>
+					<th>Date</th>
+					<th>Action</th>
 
 				</tr>
 			</thead>

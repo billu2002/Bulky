@@ -38,5 +38,10 @@ namespace Bulky.DataAccess.Repository
 
 			}
 		}
+
+		public IEnumerable<Product> GetByDate(DateTime date)
+		{
+			return _db.Products.Where(p => p.Date.Date == date.Date);
+		}
 	}
 }

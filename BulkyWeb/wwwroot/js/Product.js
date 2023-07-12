@@ -5,13 +5,23 @@ $(document).ready(function () {
 
 function loadDataTable() {
     dataTable = $('#tblData').DataTable({
-        ajax: {url: '/admin/product/getall' },
+        ajax: { url: '/admin/product/getall' },
+  
         "columns": [
-            { data: "title", "width": "25%" },
-            { data: 'isbn', "width": "15%" },
-            { data: 'listPrice', "width": "10%" },
-            { data: 'author', "width": "15%" },
+            {data: "title", width: "20%"},
+            { data: 'isbn', "width": "10%" },
+            { data: 'listPrice', "width": "7.5%" },
+            { data: 'author', "width": "12.5%" },
             { data: 'category.name', "width": "10%" },
+            {
+                data: "date", "width": "15%", render: function (data) {
+                    var dateObj = new Date(data);
+                    var day = dateObj.getDate().toString().padStart(2, '0');
+                    var month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                    var year = dateObj.getFullYear().toString();
+                    return day + '-' + month + '-' + year;
+                }
+},
             {
                 data: 'id',
                 "render": function (data) {
@@ -20,9 +30,16 @@ function loadDataTable() {
                         <a onClick=Delete('/admin/product/delete/${data}') class="btn btn-danger mx-2"><i class="bi bi-trash-fill"></i>Delete</a>
                     </div>`
                 },
-                "width:": "25%"
+                "width:": "10%"
             }
         ]
+    });
+
+    $('#tblData').DataTable({
+        columnDefs: [{
+            targets: 4,
+            render: DataTable.render.moment('YYYY/MM/DD', 'Do MMM YY', 'fr')
+        }]
     });
 }
 
@@ -46,5 +63,6 @@ function Delete(url) {
                 }
             })
         }
+
     })
 }

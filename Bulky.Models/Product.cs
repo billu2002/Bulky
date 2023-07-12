@@ -51,5 +51,8 @@ namespace Bulky.Models
 		public virtual Category Category { get; set; }
 		[ValidateNever]
 		public string ImageUrl { get; set; }
+		
+		[Display(Name = "Date")]
+		public  DateTime Date { get; set;}
 	}
 }

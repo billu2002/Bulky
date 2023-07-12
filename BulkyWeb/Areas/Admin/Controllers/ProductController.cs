@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text;
 
 namespace BulkyWeb.Areas.Admin.Controllers
 {
@@ -59,72 +61,116 @@ namespace BulkyWeb.Areas.Admin.Controllers
             }
         }
 
+		[HttpGet]
+		public IActionResult Export()
+		{
+			var productVM = new ProductVM();
+
+			// Fetch the categories from the database and assign them to the CategoryList property
+			var categories = _unitOfWork.Category.GetAll().ToList();
+			productVM.CategoryList = categories.Select(c => new SelectListItem
+			{
+				Text = c.Name,
+				Value = c.Id.ToString()
+			});
+
+			return View(productVM);
+		}
+
+
 		//[HttpPost]
-		//public IActionResult UploadCSV(ProductVM productVM, IFormFile file)
+		//public IActionResult Export(ProductVM productVM)
 		//{
-		//	if (ModelState.IsValid)
+		//	DateTime selectedDate = productVM.Product.Date;
+
+		//	// Retrieve products from the database based on the selected date
+		//	var products = _unitOfWork.Product.GetByDate(selectedDate);
+
+		//	if (products.Any())
 		//	{
-		//		string wwwRootPath = _webHostEnvironment.WebRootPath;
-		//		if (file != null && file.Length > 0)
+		//		// Generate the CSV content
+		//		StringBuilder csvContent = new StringBuilder();
+		//		csvContent.AppendLine("Id,Title,Description,ISBN,Author,ListPrice,Price,Price50,Price100,CategoryId,ImageUrl,Date");
+
+		//		foreach (var product in products)
 		//		{
-		//			string csvFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-		//			string csvFilePath = Path.Combine(wwwRootPath, @"csvfiles", csvFileName);
-
-		//			// Save the uploaded CSV file to the server
-		//			using (var fileStream = new FileStream(csvFilePath, FileMode.Create))
-		//			{
-		//				file.CopyTo(fileStream);
-		//			}
-
-		//			// Read the CSV file and process the records
-		//			using (var reader = new StreamReader(csvFilePath))
-		//			{
-		//				while (!reader.EndOfStream)
-		//				{
-		//					var line = reader.ReadLine();
-		//					var values = line.Split(',');
-
-		//					// Extract the data from the CSV file
-		//					string productName = values[0];
-		//					double productPrice = double.Parse(values[1]);
-		//					// Extract other properties as needed
-
-		//					// Check if the product already exists
-
-
-
-		//						// Create a new product
-		//						Product newProduct = new Product
-		//						{
-		//							Title = productName,
-		//							Price = productPrice,
-		//							// Set other properties accordingly
-		//						};
-		//						_unitOfWork.Product.Add(newProduct);
-		//				}
-		//			}
-
-		//			// Delete the uploaded CSV file after processing
-		//			System.IO.File.Delete(csvFilePath);
+		//			csvContent.AppendLine($"{product.Id},\"{product.Title}\",\"{product.Description}\",{product.ISBN},\"{product.Author}\",{product.ListPrice},{product.Price},{product.Price50},{product.Price100},{product.CategoryId},{product.ImageUrl},{product.Date}");
 		//		}
 
-		//		_unitOfWork.Save();
-		//		TempData["success"] = "Product(s) created successfully";
-		//		return RedirectToAction("Index");
+		//		// Return the CSV file as a download response
+		//		byte[] csvBytes = Encoding.UTF8.GetBytes(csvContent.ToString());
+		//		string csvFileName = $"Products_{selectedDate:yyyyMMdd}.csv";
+		//		return File(csvBytes, "text/csv", csvFileName);
 		//	}
 		//	else
 		//	{
-		//		productVM.CategoryList = _unitOfWork.Category.GetAll().Select(u =>
-		//		   new SelectListItem
-		//		   {
-		//			   Text = u.Name,
-		//			   Value = u.Id.ToString()
-		//		   });
-		//		return View(productVM);
+		//		TempData["error"] = "No products found for the selected date.";
 		//	}
+
+		//	// Populate the CategoryList property
+		//	productVM.CategoryList = _unitOfWork.Category.GetAll()
+		//		.Select(c => new SelectListItem
+		//		{
+		//			Text = c.Name,
+		//			Value = c.Id.ToString()
+		//		});
+
+		//	return View(productVM);
 		//}
 
+
+		[HttpPost]
+		public IActionResult Export(ProductVM productVM)
+		{
 		
+				DateTime selectedDate = productVM.Product.Date;
+
+				// Check if a valid date has been entered
+				if (selectedDate != default(DateTime))
+				{
+					// Retrieve products from the database based on the selected date
+					var products = _unitOfWork.Product.GetByDate(selectedDate);
+
+					if (products.Any())
+					{
+						// Generate the CSV content
+						StringBuilder csvContent = new StringBuilder();
+						csvContent.AppendLine("Id,Title,Description,ISBN,Author,ListPrice,Price,Price50,Price100,CategoryId");
+
+						foreach (var product in products)
+						{
+							csvContent.AppendLine($"{product.Id},\"{product.Title}\",\"{product.Description}\",{product.ISBN},\"{product.Author}\",{product.ListPrice},{product.Price},{product.Price50},{product.Price100},{product.CategoryId}");
+						}
+
+						// Return the CSV file as a download response
+						byte[] csvBytes = Encoding.UTF8.GetBytes(csvContent.ToString());
+						string csvFileName = $"Products_{selectedDate:yyyyMMdd}.csv";
+						return File(csvBytes, "text/csv", csvFileName);
+					}
+					else
+					{
+						TempData["invalidDate"] = true;
+					}
+				}
+				else
+				{
+					TempData["invalidDate"] = true;
+				}
+			
+
+			// Populate the CategoryList property
+			productVM.CategoryList = _unitOfWork.Category.GetAll()
+				.Select(c => new SelectListItem
+				{
+					Text = c.Name,
+					Value = c.Id.ToString()
+				});
+
+			return View(productVM);
+		}
+
+
+
 		public IActionResult UploadCSV(IFormFile file)
 		{
 			if (file == null || file.Length == 0)
@@ -162,6 +208,9 @@ namespace BulkyWeb.Areas.Admin.Controllers
 					double Price100 = double.Parse(values[8]);
 					int CategoryId = int.Parse(values[9]);
 					string ImageURL = values[10];
+					DateTime Date = DateTime.Now.ToLocalTime();
+					
+					
 					// Extract other properties as needed
 
 					// Create a new product instance
@@ -177,7 +226,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
 						Price50 = Price50,
 						Price100 = Price100,
 						CategoryId = CategoryId,
-						ImageUrl = ImageURL
+						ImageUrl = ImageURL,
+						Date = Date
 					// Set other properties accordingly
 				};
 
